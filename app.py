@@ -72,7 +72,11 @@ def index():
         libros = db.execute(sql).fetchall()
     else:
         libros = db.execute("SELECT * FROM libros ORDER BY titulo").fetchall()
-    return render_template("index.html", libros=libros, q=q)
+    stats = db.execute(
+        "SELECT COUNT(*) AS total, COALESCE(SUM(disponible), 0) AS disponibles, "
+        "COUNT(DISTINCT autor) AS autores FROM libros"
+    ).fetchone()
+    return render_template("index.html", libros=libros, q=q, stats=stats)
 
 
 @app.route("/libro/nuevo", methods=["GET", "POST"])

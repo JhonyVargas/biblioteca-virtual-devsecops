@@ -3,22 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Biblioteca Virtual</title>
+  <title>{% block titulo %}Biblioteca Virtual{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
 </head>
 <body>
-  <header>
-    <a href="{{ url_for('index') }}" class="logo">📚 Biblioteca Virtual</a>
-    <a href="{{ url_for('nuevo_libro') }}" class="btn">+ Nuevo libro</a>
-  </header>
-  <main>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="{{ url_for('index') }}" class="brand">
+        <span class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </span>
+        <span>Biblioteca<strong>Virtual</strong></span>
+      </a>
+      <a href="{{ url_for('nuevo_libro') }}" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Nuevo libro
+      </a>
+    </div>
+  </nav>
+
+  <main class="container">
     {% with mensajes = get_flashed_messages(with_categories=true) %}
-      {% for categoria, mensaje in mensajes %}
-        <div class="alerta {{ categoria }}">{{ mensaje }}</div>
-      {% endfor %}
+      {% if mensajes %}
+      <div class="toasts">
+        {% for categoria, mensaje in mensajes %}
+          <div class="toast toast-{{ categoria }}">
+            {% if categoria == 'ok' %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            {% else %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            {% endif %}
+            {{ mensaje }}
+          </div>
+        {% endfor %}
+      </div>
+      {% endif %}
     {% endwith %}
     {% block contenido %}{% endblock %}
   </main>
-  <footer>Proyecto de escaneo de vulnerabilidades · DevSecOps</footer>
+
+  <footer class="footer">
+    <span>Biblioteca Virtual</span>
+    <span class="dot">•</span>
+    <span>Pipeline DevSecOps con Bandit, Gitleaks, OSV-Scanner, Grype y Nuclei</span>
+  </footer>
 </body>
 </html>

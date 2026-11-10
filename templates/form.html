@@ -1,22 +1,51 @@
 {% extends "base.html" %}
 {% block contenido %}
-<h2>{{ accion }} libro</h2>
-<form class="formulario" method="post">
-  <label>Título *
-    <input type="text" name="titulo" value="{{ libro.titulo or '' }}" required>
-  </label>
-  <label>Autor *
-    <input type="text" name="autor" value="{{ libro.autor or '' }}" required>
-  </label>
-  <label>Año
-    <input type="number" name="anio" value="{{ libro.anio or '' }}" min="0" max="2100">
-  </label>
-  <label>Género
-    <input type="text" name="genero" value="{{ libro.genero or '' }}">
-  </label>
-  <div class="botones">
-    <button type="submit" class="btn">{{ accion }}</button>
-    <a href="{{ url_for('index') }}">Cancelar</a>
+<div class="form-wrap">
+<a href="{{ url_for('index') }}" class="back">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+  Volver al catálogo
+</a>
+
+<section class="card form-card">
+  <div class="form-head">
+    <div class="stat-icon blue">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    </div>
+    <div>
+      <h1>{{ "Registrar nuevo libro" if accion == "Registrar" else "Editar libro" }}</h1>
+      <p>Los campos marcados con * son obligatorios.</p>
+    </div>
   </div>
-</form>
+
+  <form method="post" class="form">
+    <div class="field full">
+      <label for="titulo">Título *</label>
+      <input id="titulo" type="text" name="titulo" value="{{ libro.titulo or '' }}" placeholder="Ej. Cien años de soledad" required>
+    </div>
+    <div class="field full">
+      <label for="autor">Autor *</label>
+      <input id="autor" type="text" name="autor" value="{{ libro.autor or '' }}" placeholder="Ej. Gabriel García Márquez" required>
+    </div>
+    <div class="field">
+      <label for="anio">Año de publicación</label>
+      <input id="anio" type="number" name="anio" value="{{ libro.anio or '' }}" min="0" max="2100" placeholder="Ej. 1967">
+    </div>
+    <div class="field">
+      <label for="genero">Género</label>
+      <input id="genero" type="text" name="genero" value="{{ libro.genero or '' }}" placeholder="Ej. Novela" list="generos">
+      <datalist id="generos">
+        <option value="Novela"><option value="Cuento"><option value="Poesía"><option value="Fábula">
+        <option value="Programación"><option value="Ciencia"><option value="Historia"><option value="Ensayo">
+      </datalist>
+    </div>
+    <div class="form-actions full">
+      <a href="{{ url_for('index') }}" class="btn btn-ghost">Cancelar</a>
+      <button type="submit" class="btn btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        {{ "Registrar libro" if accion == "Registrar" else "Guardar cambios" }}
+      </button>
+    </div>
+  </form>
+</section>
+</div>
 {% endblock %}
