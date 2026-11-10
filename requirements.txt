@@ -1,0 +1,5 @@
+# VULN 4 (OSV-Scanner / Grype): versiones antiguas con CVEs conocidos
+Flask==2.3.0
+Werkzeug==2.3.7
+Jinja2==3.1.2
+gunicorn==21.2.0

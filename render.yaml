@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: biblioteca-virtual
+    runtime: docker
+    plan: free
+    autoDeploy: false   # el despliegue lo dispara GitHub Actions solo si pasan los escaneos
+    healthCheckPath: /health

@@ -1,0 +1,88 @@
+name: DevSecOps - Escaneo y despliegue
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  # ---------- 1. SAST: analisis del codigo fuente ----------
+  sast-bandit:
+    name: SAST - Bandit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install bandit
+      - name: Escanear codigo con Bandit
+        run: bandit -r . -x ./.venv,./venv -ll
+
+  # ---------- 2. Secretos expuestos en el repositorio ----------
+  secrets-gitleaks:
+    name: Secretos - Gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # todo el historial de commits
+      - name: Buscar secretos con Gitleaks
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \
+            detect --source /repo --redact -v
+
+  # ---------- 3. SCA: dependencias con CVEs ----------
+  sca-osv:
+    name: Dependencias - OSV-Scanner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Escanear requirements.txt con OSV-Scanner
+        run: |
+          docker run --rm -v "$PWD:/src" ghcr.io/google/osv-scanner:latest \
+            scan source -r /src
+
+  # ---------- 4. Escaneo de la imagen Docker ----------
+  image-grype:
+    name: Imagen - Grype
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir imagen
+        run: docker build -t biblioteca:ci .
+      - name: Escanear imagen con Grype
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            anchore/grype:latest biblioteca:ci --only-fixed --fail-on high
+
+  # ---------- 5. Despliegue en Render (solo si TODO lo anterior pasa) ----------
+  deploy:
+    name: Desplegar en Render
+    runs-on: ubuntu-latest
+    needs: [sast-bandit, secrets-gitleaks, sca-osv, image-grype]
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Disparar deploy hook de Render
+        run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+
+  # ---------- 6. DAST: atacar la app ya desplegada ----------
+  dast-nuclei:
+    name: DAST - Nuclei
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Esperar a que Render termine el despliegue
+        run: |
+          sleep 120
+          for i in $(seq 1 30); do
+            if curl -fs "${{ vars.APP_URL }}/health"; then echo " -> app arriba"; exit 0; fi
+            echo "Esperando... ($i)"; sleep 10
+          done
+          echo "La app no respondio a tiempo"; exit 1
+      - name: Escanear la app en la nube con Nuclei
+        run: |
+          docker run --rm projectdiscovery/nuclei:latest \
+            -u "${{ vars.APP_URL }}" -severity low,medium,high,critical -stats
