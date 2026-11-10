@@ -96,4 +96,10 @@ gunicorn==27.0.0
 ```
 (Si OSV-Scanner sigue reportando algo, sube a la última versión que indique en la columna *Fixed Version*.)
 
+**5. Paquetes del sistema operativo en la imagen** (Grype detecta, por ejemplo, `zlib1g`
+vulnerable en la imagen base de Debian) — actualízalos en el `Dockerfile`, justo después de `WORKDIR /app`:
+```dockerfile
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+```
+
 Haz `push` otra vez: todos los escáneres pasan ✅ → la app se despliega en Render → Nuclei la escanea.
