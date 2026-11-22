@@ -1,9 +1,5 @@
 """
-Biblioteca Virtual - App de ejemplo para escaneo de vulnerabilidades.
-
-ATENCION: esta version contiene vulnerabilidades INTENCIONALES (marcadas con
-"VULN") para demostrar como las detectan Bandit, Gitleaks, OSV-Scanner y Grype.
-Ver README.md -> "Corrigiendo las vulnerabilidades".
+Biblioteca Virtual - gestion del catalogo y los prestamos de una biblioteca.
 """
 import os
 import sqlite3
@@ -12,9 +8,8 @@ from flask import Flask, g, redirect, render_template, request, url_for, flash
 
 app = Flask(__name__)
 
-# VULN 1 (Gitleaks / Bandit B105): secreto escrito directamente en el codigo
-SECRET_KEY = "9fK2xLq8Zr4TmW7pVn3YdH6sJc1Ae5UbQ0wE"
-app.config["SECRET_KEY"] = SECRET_KEY
+# La clave se define como variable de entorno (en Render), nunca en el codigo
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or os.urandom(32)
 
 DATABASE = os.environ.get("DATABASE_PATH", "biblioteca.db")
 
@@ -67,9 +62,12 @@ def index():
     q = request.args.get("q", "").strip()
     db = get_db()
     if q:
-        # VULN 2 (Bandit B608): SQL Injection por concatenar la entrada del usuario
-        sql = f"SELECT * FROM libros WHERE titulo LIKE '%{q}%' OR autor LIKE '%{q}%' ORDER BY titulo"
-        libros = db.execute(sql).fetchall()
+        # Consulta parametrizada: la entrada del usuario se trata como dato, no como SQL
+        patron = f"%{q}%"
+        libros = db.execute(
+            "SELECT * FROM libros WHERE titulo LIKE ? OR autor LIKE ? ORDER BY titulo",
+            (patron, patron),
+        ).fetchall()
     else:
         libros = db.execute("SELECT * FROM libros ORDER BY titulo").fetchall()
     stats = db.execute(
@@ -152,5 +150,5 @@ def health():
 init_db()
 
 if __name__ == "__main__":
-    # VULN 3 (Bandit B201): modo debug activo y expuesto en todas las interfaces
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # Solo para desarrollo local: debug apagado salvo que FLASK_DEBUG=1
+    app.run(host="127.0.0.1", port=5000, debug=os.environ.get("FLASK_DEBUG") == "1")

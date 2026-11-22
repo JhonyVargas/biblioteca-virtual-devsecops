@@ -5,8 +5,8 @@ demostrar **escaneo de vulnerabilidades automatizado** con herramientas de la li
 [OWASP Vulnerability Scanning Tools](https://owasp.org/www-community/Vulnerability_Scanning_Tools)
 y **despliegue automático en la nube (Render)** mediante **GitHub Actions**.
 
-> ⚠️ La versión inicial contiene **vulnerabilidades intencionales** (marcadas con `VULN`
-> en el código) para que los escáneres las detecten. Más abajo se explica cómo corregirlas.
+> ✅ La versión inicial tenía **vulnerabilidades intencionales** para que los escáneres las detectaran.
+> Ya están corregidas: más abajo se explica cada corrección.
 
 ## Funcionalidades
 - Listar, buscar, registrar, editar y eliminar libros
@@ -92,7 +92,7 @@ app.run(host="127.0.0.1", port=5000, debug=os.environ.get("FLASK_DEBUG") == "1")
 Flask==3.1.3
 Werkzeug==3.1.9
 Jinja2==3.1.6
-gunicorn==27.0.0
+gunicorn==27.0.1
 ```
 (Si OSV-Scanner sigue reportando algo, sube a la última versión que indique en la columna *Fixed Version*.)
 

@@ -1,0 +1,3 @@
+# Secreto de la primera version: quedo en el historial de Git, por eso se roto
+# y la clave real ahora vive como variable de entorno en Render.
+4c98709819f26ba53ffd611d17b9cb0a1232a23c:app.py:generic-api-key:16
